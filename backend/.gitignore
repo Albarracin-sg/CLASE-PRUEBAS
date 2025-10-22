@@ -1,3 +1,9 @@
 bun.lock
 node_modules
 package-lock.json
+
+# Base de datos de desarrollo
+tareas.db
+
+# Reportes de cobertura
+coverage
