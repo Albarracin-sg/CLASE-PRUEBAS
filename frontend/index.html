@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor de Tareas</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  max-width: 1200px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  padding: 40px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1 {
+  color: #6366f1;
+  margin-bottom: 32px;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.form-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.form-group input {
+  padding: 14px 18px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #6366f1;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.form-group button {
+  padding: 14px 32px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.form-group button:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.form-group button:active {
+  transform: translateY(0);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: #f3f4f6;
+  padding: 6px;
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.filter-buttons button {
+  padding: 10px 24px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.filter-buttons button:hover {
+  color: #374151;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.filter-buttons button.active {
+  background: white;
+  color: #6366f1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+#lista {
+  list-style: none;
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#lista::-webkit-scrollbar {
+  width: 6px;
+}
+
+#lista::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#lista::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+#lista::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+#lista li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  gap: 16px;
+}
+
+#lista li:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: white;
+}
+
+#lista li span {
+  flex: 1;
+  font-size: 15px;
+  color: #1f2937;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+#lista li .completada {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+#lista li div {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+#lista li button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.edit-button {
+  background: #3b82f6;
+}
+
+.edit-button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.complete-button {
+  background: #10b981;
+}
+
+.complete-button:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.delete-button {
+  background: #ef4444;
+}
+
+.delete-button:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Modals */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  margin: 10% auto;
+  padding: 36px;
+  border: none;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  color: #1f2937;
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+}
+
+.modal-content input:focus {
+  outline: none;
+  border-color: #6366f1;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+
+.modal-content button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  margin-right: 10px;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+#edit-save {
+  background: #6366f1;
+}
+
+#edit-save:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+#delete-confirm {
+  background: #ef4444;
+}
+
+#delete-confirm:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+#delete-cancel {
+  background: #6b7280;
+}
+
+#delete-cancel:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+.close-button {
+  color: #9ca3af;
+  float: right;
+  font-size: 28px;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 20px;
+}
+
+.close-button:hover {
+  color: #6366f1;
+}
+
+.modal-content p {
+  font-size: 16px;
+  color: #4b5563;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+/* Notifications */
+#notification-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 2000;
+}
+
+.notification {
+  background: #10b981;
+  color: white;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-weight: 500;
+  min-width: 280px;
+  font-size: 14px;
+}
+
+.notification.error {
+  background: #ef4444;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 100px 20px;
+  color: #9ca3af;
+}
+
+.empty-state svg {
+  width: 80px;
+  height: 80px;
+  opacity: 0.4;
+  margin-bottom: 16px;
+}
+
+.empty-state p {
+  font-size: 15px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+@media (max-width: 900px) {
+  body {
+    padding: 15px;
+  }
+
+  .container {
+    padding: 28px;
+    min-height: calc(100vh - 30px);
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+  }
+
+  .form-group {
+    grid-template-columns: 1fr;
+  }
+
+  #lista li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #lista li div {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .modal-content {
+    padding: 28px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Gestor de Tareas</h1>
+<div class="form-group">
+<input id="titulo" placeholder="Título de la tarea" autocomplete="off">
+<input id="descripcion" placeholder="Descripción (opcional)" autocomplete="off">
+<button id="agregar">Agregar</button>
+</div>
+<div class="filter-buttons">
+<button id="filter-all" class="active">Todas</button>
+<button id="filter-pending">Pendientes</button>
+<button id="filter-completed">Completadas</button>
+</div>
+<ul id="lista"></ul>
+</div>
+
+<!-- Modal para editar tarea -->
+<div id="edit-modal" class="modal">
+<div class="modal-content">
+<span class="close-button">&times;</span>
+<h2>Editar Tarea</h2>
+<input id="edit-titulo" placeholder="Título">
+<input id="edit-descripcion" placeholder="Descripción">
+<button id="edit-save">Guardar Cambios</button>
+</div>
+</div>
+
+<!-- Modal para confirmar eliminación -->
+<div id="delete-modal" class="modal">
+<div class="modal-content">
+<p>¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer.</p>
+<button id="delete-confirm">Eliminar</button>
+<button id="delete-cancel">Cancelar</button>
+</div>
+</div>
+
+<div id="notification-container"></div>
+
+<script>
+const API = "http://localhost:3000/api/tareas";
+
+// Elementos del DOM
+const lista = document.getElementById("lista");
+const tituloInput = document.getElementById("titulo");
+const descripcionInput = document.getElementById("descripcion");
+const agregarBtn = document.getElementById("agregar");
+const filterButtons = document.querySelector(".filter-buttons");
+
+// Modales
+const editModal = document.getElementById("edit-modal");
+const deleteModal = document.getElementById("delete-modal");
+const editTituloInput = document.getElementById("edit-titulo");
+const editDescripcionInput = document.getElementById("edit-descripcion");
+const editSaveBtn = document.getElementById("edit-save");
+const deleteConfirmBtn = document.getElementById("delete-confirm");
+const deleteCancelBtn = document.getElementById("delete-cancel");
+const closeModalBtns = document.querySelectorAll(".close-button");
+
+// Notificaciones
+const notificationContainer = document.getElementById("notification-container");
+
+let editTaskId = null;
+let deleteTaskId = null;
+let currentFilter = "all";
+
+// --- Funciones de la API ---
+
+async function fetchTareas() {
+  try {
+    const res = await fetch(API);
+    if (!res.ok) throw new Error("Error al cargar tareas");
+    return await res.json();
+  } catch (error) {
+    showNotification(error.message, "error");
+    return [];
+  }
+}
+
+async function crearTarea(titulo, descripcion) {
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titulo, descripcion }),
+    });
+    if (!res.ok) throw new Error("Error al crear tarea");
+    showNotification("Tarea creada exitosamente");
+    cargarTareas();
+  } catch (error) {
+    showNotification(error.message, "error");
+  }
+}
+
+async function actualizarTarea(id, titulo, descripcion) {
+  try {
+    const res = await fetch(`${API}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titulo, descripcion }),
+    });
+    if (!res.ok) throw new Error("Error al actualizar tarea");
+    showNotification("Tarea actualizada exitosamente");
+    cargarTareas();
+    closeEditModal();
+  } catch (error) {
+    showNotification(error.message, "error");
+  }
+}
+
+async function completarTarea(id) {
+  try {
+    const res = await fetch(`${API}/${id}/completar`, { method: "PUT" });
+    if (!res.ok) throw new Error("Error al completar tarea");
+    showNotification("Tarea marcada como completada");
+    cargarTareas();
+  } catch (error) {
+    showNotification(error.message, "error");
+  }
+}
+
+async function eliminarTarea(id) {
+  try {
+    const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Error al eliminar tarea");
+    showNotification("Tarea eliminada exitosamente");
+    cargarTareas();
+    closeDeleteModal();
+  } catch (error) {
+    showNotification(error.message, "error");
+  }
+}
+
+// --- Renderizado ---
+
+function renderTareas(tareas) {
+  lista.innerHTML = "";
+  const filteredTareas = tareas.filter(t => {
+    if (currentFilter === "all") return true;
+    if (currentFilter === "pending") return !t.completada;
+    if (currentFilter === "completed") return t.completada;
+  });
+
+  if (filteredTareas.length === 0) {
+    lista.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+        </svg>
+        <p>${currentFilter === 'pending' ? 'No hay tareas pendientes' : currentFilter === 'completed' ? 'No hay tareas completadas' : 'No hay tareas creadas'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  filteredTareas.forEach(t => {
+    const li = document.createElement("li");
+    li.dataset.id = t.id;
+    li.innerHTML = `
+      <span class="${t.completada ? "completada" : ""}">${t.titulo}${t.descripcion ? ' - ' + t.descripcion : ''}</span>
+      <div>
+        <button class="edit-button">Editar</button>
+        <button class="complete-button">Completar</button>
+        <button class="delete-button">Eliminar</button>
+      </div>
+    `;
+    lista.appendChild(li);
+  });
+}
+
+async function cargarTareas() {
+  const tareas = await fetchTareas();
+  renderTareas(tareas);
+}
+
+// --- Modales ---
+
+function openEditModal(tarea) {
+  editTaskId = tarea.id;
+  editTituloInput.value = tarea.titulo;
+  editDescripcionInput.value = tarea.descripcion || '';
+  editModal.style.display = "block";
+}
+
+function closeEditModal() {
+  editModal.style.display = "none";
+}
+
+function openDeleteModal(id) {
+  deleteTaskId = id;
+  deleteModal.style.display = "block";
+}
+
+function closeDeleteModal() {
+  deleteModal.style.display = "none";
+}
+
+// --- Notificaciones ---
+
+function showNotification(message, type = "success") {
+  const notification = document.createElement("div");
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  notificationContainer.appendChild(notification);
+  setTimeout(() => notification.remove(), 3000);
+}
+
+// --- Event Listeners ---
+
+document.addEventListener("DOMContentLoaded", cargarTareas);
+
+agregarBtn.addEventListener("click", () => {
+  const titulo = tituloInput.value.trim();
+  const descripcion = descripcionInput.value.trim();
+  if (!titulo) {
+    showNotification("El título es requerido", "error");
+    return;
+  }
+  crearTarea(titulo, descripcion);
+  tituloInput.value = "";
+  descripcionInput.value = "";
+});
+
+tituloInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") agregarBtn.click();
+});
+
+descripcionInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") agregarBtn.click();
+});
+
+lista.addEventListener("click", async e => {
+  const target = e.target;
+  const li = target.closest("li");
+  if (!li) return;
+  const id = li.dataset.id;
+
+  if (target.classList.contains("edit-button")) {
+    const tareas = await fetchTareas();
+    const tarea = tareas.find(t => t.id == id);
+    openEditModal(tarea);
+  }
+
+  if (target.classList.contains("complete-button")) {
+    completarTarea(id);
+  }
+
+  if (target.classList.contains("delete-button")) {
+    openDeleteModal(id);
+  }
+});
+
+editSaveBtn.addEventListener("click", () => {
+  const titulo = editTituloInput.value.trim();
+  const descripcion = editDescripcionInput.value.trim();
+  if (!titulo) {
+    showNotification("El título es requerido", "error");
+    return;
+  }
+  actualizarTarea(editTaskId, titulo, descripcion);
+});
+
+deleteConfirmBtn.addEventListener("click", () => {
+  eliminarTarea(deleteTaskId);
+});
+
+deleteCancelBtn.addEventListener("click", closeDeleteModal);
+
+closeModalBtns.forEach(btn => btn.addEventListener("click", () => {
+  closeEditModal();
+  closeDeleteModal();
+}));
+
+window.addEventListener("click", (e) => {
+  if (e.target === editModal) closeEditModal();
+  if (e.target === deleteModal) closeDeleteModal();
+});
+
+filterButtons.addEventListener("click", e => {
+    if(e.target.tagName === 'BUTTON') {
+        currentFilter = e.target.id.replace('filter-', '');
+        document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        cargarTareas();
+    }
+});
+</script>
+</body>
+</html>
