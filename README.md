@@ -33,10 +33,8 @@ gestorTareas/
 │   ├── bun.lock
 │   ├── db.js
 │   ├── jest.config.js
-│   ├── package-lock.json
 │   ├── package.json
 │   ├── tareas.db
-│   ├── node_modules/...
 │   ├── routes/
 │   │   └── tareas.js
 │   └── tests/
@@ -47,7 +45,5 @@ gestorTareas/
 │       ├── integration.test.js
 │       └── unit.test.js
 └── frontend/
-    ├── index.html
-    ├── script.js
-    └── styles.css
+    └── index.html
 ```
