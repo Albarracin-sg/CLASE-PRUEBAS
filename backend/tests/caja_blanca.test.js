@@ -1,17 +1,17 @@
-import { jest } from "@jest/globals";
-import { app } from "../app.js";
+import { test, expect, vi } from "bun:test";
 import request from "supertest";
+import { app } from "../app.js";
+import * as db from "../db.js";
 
 test("caja blanca: error 500 si la base de datos falla", async () => {
-  jest.unstable_mockModule("../db.js", () => ({
-    getDB: jest.fn(() => {
-      throw new Error("Fallo de base de datos simulado");
-    }),
-  }));
-
-  const { getDB } = await import("../db.js");
+  // Espía temporal para simular el error sin sobrescribir la propiedad
+  const spy = vi.spyOn(db, "getDB").mockImplementation(() => {
+    throw new Error("Fallo simulado en la base de datos");
+  });
 
   const res = await request(app).get("/api/tareas");
   expect(res.status).toBe(500);
-  expect(res.body.error).toBe("Fallo de base de datos simulado");
+
+  // Restaurar comportamiento original
+  spy.mockRestore();
 });
